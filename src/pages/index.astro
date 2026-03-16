@@ -1,0 +1,567 @@
+---
+// index.astro - la página principal
+// Importamos los componentes que vamos a usar
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import GameCard from '../components/GameCard.astro';
+import Footer from '../components/Footer.astro';
+
+// Los datos de los juegos - en un proyecto real esto vendría de una API o base de datos
+const games = [
+  {
+    title: "The Legend of Zelda: Breath of the Wild",
+    genre: "aventura",
+    rating: 9.5,
+    year: 2017,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2120050/header.jpg",
+    tags: ["Aventura", "Open World", "Nintendo"]
+  },
+  {
+    title: "Red Dead Redemption 2",
+    genre: "accion",
+    rating: 9.7,
+    year: 2018,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg",
+    tags: ["Acción", "Open World", "Rockstar"]
+  },
+  {
+    title: "Hollow Knight",
+    genre: "plataformas",
+    rating: 9.1,
+    year: 2017,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/header.jpg",
+    tags: ["Plataformas", "Indie", "Metroidvania"]
+  },
+  {
+    title: "Elden Ring",
+    genre: "rpg",
+    rating: 9.4,
+    year: 2022,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg",
+    tags: ["RPG", "Souls-like", "Fantasy"]
+  },
+  {
+    title: "Hades",
+    genre: "accion",
+    rating: 8.9,
+    year: 2020,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg",
+    tags: ["Acción", "Roguelike", "Indie"]
+  },
+  {
+    title: "Celeste",
+    genre: "plataformas",
+    rating: 8.8,
+    year: 2018,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/504230/header.jpg",
+    tags: ["Plataformas", "Indie", "Difícil"]
+  },
+  {
+    title: "Cyberpunk 2077",
+    genre: "rpg",
+    rating: 8.2,
+    year: 2020,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg",
+    tags: ["RPG", "Open World", "Futurista"]
+  },
+  {
+    title: "Portal 2",
+    genre: "puzzle",
+    rating: 9.3,
+    year: 2011,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/620/header.jpg",
+    tags: ["Puzzle", "Cooperativo", "Valve"]
+  },
+  {
+    title: "Stardew Valley",
+    genre: "simulacion",
+    rating: 9.0,
+    year: 2016,
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/header.jpg",
+    tags: ["Simulación", "Indie", "Relajante"]
+  }
+];
+
+// Géneros únicos para los botones de filtro
+const generos = ['todos', ...new Set(games.map(g => g.genre))];
+
+// Convertimos los nombres de género para mostrar con mayúscula
+const genreLabels: Record<string, string> = {
+  todos: 'Todos',
+  aventura: 'Aventura',
+  accion: 'Acción',
+  plataformas: 'Plataformas',
+  rpg: 'RPG',
+  puzzle: 'Puzzle',
+  simulacion: 'Simulación'
+};
+---
+
+<Layout title="GameVault — Catálogo de Videojuegos">
+  <Header />
+
+  <!-- ========================
+       SECCIÓN 1: HERO
+       ======================== -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-tag">Tu colección digital</p>
+        <h1 class="hero-title">
+          Explorá los mejores<br />
+          <span class="accent">videojuegos</span> de todos los tiempos
+        </h1>
+        <p class="hero-subtitle">
+          Un catálogo curado con los títulos más relevantes de la historia del gaming.
+          Filtrá por género y encontrá tu próximo juego favorito.
+        </p>
+        <a href="#catalogo" class="btn-primary">Ver catálogo</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number" id="statGames">9</span>
+          <span class="stat-label">Juegos</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">6</span>
+          <span class="stat-label">Géneros</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">9.7</span>
+          <span class="stat-label">Rating máx.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================
+       SECCIÓN 2: GÉNEROS
+       ======================== -->
+  <section class="section" id="generos">
+    <div class="container">
+      <h2 class="section-title">Géneros</h2>
+      <p class="section-subtitle">Seleccioná un género para filtrar el catálogo</p>
+      <div class="genre-grid">
+        {generos.map(g => (
+          <button
+            class={`genre-btn ${g === 'todos' ? 'active' : ''}`}
+            data-genre={g}
+          >
+            {genreLabels[g] ?? g}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================
+       SECCIÓN 3: CATÁLOGO
+       ======================== -->
+  <section class="section" id="catalogo">
+    <div class="container">
+      <div class="catalog-header">
+        <div>
+          <h2 class="section-title">Catálogo</h2>
+          <p class="section-subtitle">
+            Mostrando <span id="gameCount">{games.length}</span> juegos
+          </p>
+        </div>
+        <!-- Buscador -->
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Buscar juego..."
+          aria-label="Buscar juego"
+        />
+      </div>
+
+      <!-- Grid de juegos -->
+      <div class="games-grid" id="gamesGrid">
+        {games.map(game => (
+          <GameCard
+            title={game.title}
+            genre={game.genre}
+            rating={game.rating}
+            year={game.year}
+            image={game.image}
+            tags={game.tags}
+          />
+        ))}
+      </div>
+
+      <!-- Mensaje cuando no hay resultados -->
+      <p class="no-results hidden" id="noResults">
+        No se encontraron juegos para esta búsqueda.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================
+       SECCIÓN 4: DESTACADOS
+       ======================== -->
+  <section class="section featured-section" id="destacados">
+    <div class="container">
+      <h2 class="section-title">Juego destacado</h2>
+      <p class="section-subtitle">El título más valorado del catálogo</p>
+      <div class="featured-card">
+        <div class="featured-image-wrap">
+          <img
+            src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg"
+            alt="Red Dead Redemption 2"
+            class="featured-image"
+          />
+        </div>
+        <div class="featured-info">
+          <span class="featured-badge">★ 9.7 — Mejor puntuado</span>
+          <h3 class="featured-title">Red Dead Redemption 2</h3>
+          <p class="featured-desc">
+            Una epopeya del western americano. Con un mundo abierto sin igual, 
+            personajes profundos y una narrativa que redefinió los estándares 
+            de los videojuegos de acción. Rockstar Games, 2018.
+          </p>
+          <div class="featured-tags">
+            <span class="tag">Acción</span>
+            <span class="tag">Open World</span>
+            <span class="tag">Rockstar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<!-- ========================
+     ESTILOS DE LA PÁGINA
+     ======================== -->
+<style>
+  /* HERO */
+  .hero {
+    padding: 6rem 0 4rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .hero .container {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .hero-content {
+    max-width: 650px;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-accent);
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  .hero-title {
+    font-family: var(--font-main);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1.25rem;
+  }
+
+  .accent {
+    color: var(--color-accent);
+  }
+
+  .hero-subtitle {
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin-bottom: 2rem;
+    line-height: 1.7;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--color-accent);
+    color: white;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background var(--transition), transform var(--transition);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Stats */
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-number {
+    font-family: var(--font-main);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-accent);
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+
+  /* SECCIONES */
+  .section {
+    padding: 4rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* GÉNEROS */
+  .genre-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .genre-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    transition: all var(--transition);
+  }
+
+  .genre-btn:hover,
+  .genre-btn.active {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: rgba(124, 92, 252, 0.08);
+  }
+
+  /* CATÁLOGO */
+  .catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .search-input {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+    width: 240px;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+
+  .search-input::placeholder {
+    color: var(--color-muted);
+  }
+
+  .search-input:focus {
+    border-color: var(--color-accent);
+  }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .no-results {
+    color: var(--color-muted);
+    text-align: center;
+    padding: 3rem;
+    font-size: 1rem;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* DESTACADOS */
+  .featured-section {
+    border-bottom: none;
+  }
+
+  .featured-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: calc(var(--radius) * 1.5);
+    overflow: hidden;
+    padding: 2rem;
+    align-items: center;
+  }
+
+  .featured-image-wrap {
+    border-radius: var(--radius);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+  }
+
+  .featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .featured-badge {
+    display: inline-block;
+    background: rgba(76, 175, 132, 0.15);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .featured-title {
+    font-family: var(--font-main);
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .featured-desc {
+    color: var(--color-muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .featured-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--color-surface2);
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .featured-card {
+      grid-template-columns: 1fr;
+    }
+
+    .catalog-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .search-input {
+      width: 100%;
+    }
+
+    .hero-stats {
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .games-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- ========================
+     JAVASCRIPT DE LA PÁGINA
+     ======================== -->
+<script>
+  // Seleccionamos los elementos del DOM que vamos a manipular
+  const genreBtns = document.querySelectorAll('.genre-btn');
+  const gamesGrid = document.getElementById('gamesGrid');
+  const gameCards = gamesGrid?.querySelectorAll('.game-card');
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+  const gameCount = document.getElementById('gameCount');
+  const noResults = document.getElementById('noResults');
+
+  // Variables de estado
+  let activeGenre = 'todos';
+  let searchTerm = '';
+
+  // Función principal que filtra los juegos
+  function filterGames() {
+    let visible = 0;
+
+    gameCards?.forEach(card => {
+      const cardEl = card as HTMLElement;
+      const genre = cardEl.dataset.genre ?? '';
+      const title = cardEl.querySelector('.card-title')?.textContent?.toLowerCase() ?? '';
+
+      // Checkeamos si el juego pasa los dos filtros (género Y búsqueda)
+      const matchesGenre = activeGenre === 'todos' || genre === activeGenre;
+      const matchesSearch = title.includes(searchTerm.toLowerCase());
+
+      if (matchesGenre && matchesSearch) {
+        cardEl.style.display = 'block';
+        visible++;
+      } else {
+        cardEl.style.display = 'none';
+      }
+    });
+
+    // Actualizamos el contador
+    if (gameCount) gameCount.textContent = String(visible);
+
+    // Mostramos el mensaje de "sin resultados" si hace falta
+    if (noResults) {
+      noResults.classList.toggle('hidden', visible > 0);
+    }
+  }
+
+  // Listeners para los botones de género
+  genreBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Quitamos 'active' de todos y lo ponemos en el clickeado
+      genreBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Actualizamos el género activo y filtramos
+      activeGenre = (btn as HTMLElement).dataset.genre ?? 'todos';
+      filterGames();
+    });
+  });
+
+  // Listener para el input de búsqueda
+  // El evento 'input' se dispara cada vez que el usuario escribe
+  searchInput?.addEventListener('input', () => {
+    searchTerm = searchInput.value;
+    filterGames();
+  });
+</script>
